@@ -1,0 +1,17 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: pink;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+  }
+
+  button {
+    background-color: yellow;
+    border-radius: 5px;
+    padding: 10px 20px;
+  }
