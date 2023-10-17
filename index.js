@@ -1,6 +1,15 @@
 let express = require('express')
-
 let app = express()
+
+let catDatabase = ['Sparkles', 'Jumpy']
+
+// include and initialize the rollbar library with your access token
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: '1bebf8db1bcb47d4a3197ab2784ca9bd',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
 
 app.use(express.json())
 
@@ -15,13 +24,39 @@ app.use(express.json())
 //a GET endpoint, '/', that serves index.html's HTML specifically
 app.use(express.static(__dirname + '/public'))
 
-let catDatabase = ['Sparkles', 'Jumpy', 'Macy', 'Gogi', 'Barry', 'Banjo', 'Messi', 'Binx', 'Comet']
-
 app.get('/cat', (req, res) => {
     let randomIndex = Math.floor(Math.random() * catDatabase.length)
 
     res.status(200).send(catDatabase[randomIndex])
+});
+
+app.post('/cat', (req, res) => {
+  let {newCatValue} = req.body
+  // console.log(req.body)
+  rollbar.info('Someone is adding a cat!')
+
+  const index = catDatabase.findIndex(cat => {
+      return cat === newCatValue
+  })
+
+  try {
+      if (index === -1 && newCatValue !== '') {
+        catDatabase.push(newCatValue)
+          res.status(200).send(newCatValue)
+      } else if (newCatValue === ''){
+           rollbar.warning('The User tried to enter in a nameless cat.')
+           res.status(400).send('You must name the cat.')
+      } else {
+           rollbar.critical('The User added in a cat that already exists.')
+           res.status(400).send('That cat already exists.')
+      }
+  } catch (err) {
+      console.log('My bobios fuction did not work at All!')
+      rollbar.critical('Cat Submission error: cat submission function did not work.')
+  }
 })
+
+
 
 app.listen(4000, () => {
     console.log('server up on port 4000')
